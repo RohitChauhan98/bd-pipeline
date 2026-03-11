@@ -10,6 +10,7 @@ import { z } from 'zod';
 // ── Client Create ────────────────────────────
 
 export const createClientSchema = z.object({
+  leadId: z.string().uuid('Lead ID is required to convert to client'),
   companyName: z.string().min(1, 'Company name is required'),
   primaryContactName: z.string().min(1, 'Contact name is required'),
   primaryContactEmail: z.string().email('Valid email required'),
@@ -17,7 +18,7 @@ export const createClientSchema = z.object({
   contractValue: z.number().positive().optional(),
   contractStart: z.string().datetime().optional(),
   contractEnd: z.string().datetime().optional(),
-  assignedManagerId: z.string().uuid(),
+  assignedManagerId: z.string().uuid().optional(),
 });
 
 export const updateClientSchema = z.object({

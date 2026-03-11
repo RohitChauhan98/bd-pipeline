@@ -9,13 +9,7 @@ import { callsController } from './calls.controller.js';
 import { authenticate } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { aiLimiter } from '../../middleware/rate-limit.js';
-import {
-  createCallSchema,
-  createMeetingSchema,
-  updateMeetingSchema,
-  createMeetingNoteSchema,
-  meetingListQuerySchema,
-} from '@bd-pipeline/shared';
+import { createCallSchema } from '@bd-pipeline/shared';
 import { z } from 'zod';
 
 const router = Router();
@@ -52,50 +46,7 @@ router.get(
   callsController.getCallSummary,
 );
 
-// ── Meetings ─────────────────────────────────
-
-router.get(
-  '/meetings',
-  authenticate,
-  validate({ query: meetingListQuerySchema }),
-  callsController.listMeetings,
-);
-
-router.post(
-  '/meetings',
-  authenticate,
-  validate({ body: createMeetingSchema }),
-  callsController.createMeeting,
-);
-
-router.get(
-  '/meetings/:id',
-  authenticate,
-  validate({ params: uuidParam }),
-  callsController.getMeeting,
-);
-
-router.patch(
-  '/meetings/:id',
-  authenticate,
-  validate({ params: uuidParam, body: updateMeetingSchema }),
-  callsController.updateMeeting,
-);
-
-// ── Meeting Notes ────────────────────────────
-
-router.post(
-  '/meetings/:id/notes',
-  authenticate,
-  validate({ params: uuidParam, body: createMeetingNoteSchema }),
-  callsController.addMeetingNote,
-);
-
-router.get(
-  '/meetings/:id/notes',
-  authenticate,
-  validate({ params: uuidParam }),
-  callsController.getMeetingNotes,
-);
+// ── Meetings — handled by dedicated meetings module ─────
+// See: modules/meetings/meetings.routes.ts
 
 export { router as callsRoutes };

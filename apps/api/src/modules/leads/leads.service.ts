@@ -23,7 +23,7 @@ export const leadsService = {
       data: {
         ...rest,
         source: rest.source ?? 'MANUAL',
-        status: rest.status ?? 'NEW',
+        status: rest.status ?? 'DISCOVERED',
         assignedTo: assignedToId ? { connect: { id: assignedToId } } : { connect: { id: userId } },
       },
       include: {
@@ -110,11 +110,16 @@ export const leadsService = {
   /**
    * Update lead fields.
    */
-  async update(id: string, data: Prisma.LeadUpdateInput) {
+  async update(id: string, data: Record<string, unknown>) {
     const existing = await prisma.lead.findUnique({ where: { id } });
     if (!existing) throw new NotFoundError('Lead');
 
-    return prisma.lead.update({ where: { id }, data });
+    // Map schema field names to Prisma model fields
+    const { notes, ...rest } = data;
+    const prismaData: Record<string, unknown> = { ...rest };
+    if (notes !== undefined) prismaData.reviewNotes = notes;
+
+    return prisma.lead.update({ where: { id }, data: prismaData as Prisma.LeadUpdateInput });
   },
 
   /**

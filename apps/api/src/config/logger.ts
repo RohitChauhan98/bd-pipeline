@@ -35,9 +35,9 @@ function createChildLogger(parent: pino.Logger, bindings: LogMetadata): pino.Log
 /** Application-wide logger instance */
 export const logger = pino({
   level: env.LOG_LEVEL || (env.NODE_ENV === 'production' ? 'info' : 'debug'),
-  
-  // Enable serialisation for Error objects and raw objects
-  serialize: {
+
+  // Error serializers
+  serializers: {
     err: (err: Error) => ({
       name: err.name,
       message: err.message,
@@ -52,21 +52,10 @@ export const logger = pino({
   // Custom formatters
   formatters: {
     level: (label: string) => ({ level: label.toUpperCase() }),
-    log: (obj: Record<string, unknown>) => {
-      // Ensure timestamp is ISO format
-      const timestamp = obj.timestamp ? new Date(obj.timestamp as string).toISOString() : new Date().toISOString();
-      return {
-        ...obj,
-        timestamp,
-        // Flatten nested structures for better querying
-        level: obj.level,
-        service: obj.service,
-        requestId: obj.requestId,
-        userId: obj.userId,
-        endpoint: obj.endpoint,
-      };
-    },
   },
+
+  // Add timestamp in ISO format (leading comma required by pino's JSON concatenation)
+  timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
 
   // Pretty print in development
   transport: env.NODE_ENV === 'development'
@@ -74,9 +63,9 @@ export const logger = pino({
         target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: 'yyyy-mm-dd HH:MM:ss',
-          ignore: 'pid,hostname,service',
-          customColors: 'err:red,warn:yellow,info:green,debug:gray',
+          translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
+          ignore: 'pid,hostname',
+          messageFormat: '{msg}',
         },
       }
     : undefined,
@@ -100,12 +89,6 @@ export const logger = pino({
     ],
     censor: '[REDACTED]',
   },
-
-  // Add timestamp in ISO format
-  timestamp: () => `"timestamp":"${new Date().toISOString()}"`,
-
-  // Level based on environment
-  level: env.LOG_LEVEL || (env.NODE_ENV === 'production' ? 'info' : 'debug'),
 });
 
 // Create contextual loggers for different modules

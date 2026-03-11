@@ -95,8 +95,7 @@ Generate a subject line and email body.`,
       where: { id },
       include: {
         lead: { select: { id: true, companyName: true, contactName: true, contactEmail: true } },
-        generatedBy: { select: { id: true, name: true } },
-        approvedBy: { select: { id: true, name: true } },
+        reviewedBy: { select: { id: true, name: true } },
       },
     });
     if (!pitch) throw new NotFoundError('Pitch');
@@ -120,7 +119,7 @@ Generate a subject line and email body.`,
 
     return prisma.outreachPitch.update({
       where: { id },
-      data: { status: 'APPROVED', approvedById: userId, approvedAt: new Date() },
+      data: { status: 'APPROVED', reviewedById: userId, approvedAt: new Date() },
     });
   },
 

@@ -92,8 +92,8 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
   LOG_SLOW_THRESHOLD_MS: z.coerce.number().default(3000),
   LOG_DB_SLOW_THRESHOLD_MS: z.coerce.number().default(500),
-  LOG_REQUEST_BODY: z.boolean().default(false),
-  LOG_RESPONSE_BODY: z.boolean().default(false),
+  LOG_REQUEST_BODY: z.coerce.boolean().default(false),
+  LOG_RESPONSE_BODY: z.coerce.boolean().default(false),
 });
 
 export type Env = z.infer<typeof envSchema>;

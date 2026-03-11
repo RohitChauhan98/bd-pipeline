@@ -42,7 +42,7 @@ export const generalLimiter = rateLimit({
  */
 export const authLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 5,
+  max: 30, // 30 req/min for dev, reduce to 5 in production
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({

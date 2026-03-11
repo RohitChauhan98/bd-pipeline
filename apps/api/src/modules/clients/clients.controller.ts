@@ -15,7 +15,11 @@ export const clientsController = {
 
   /** POST /clients */
   create: asyncHandler(async (req: Request, res: Response) => {
-    const client = await clientsService.create(req.body);
+    const data = {
+      ...req.body,
+      assignedManagerId: req.body.assignedManagerId || (req as any).user?.userId,
+    };
+    const client = await clientsService.create(data);
     res.status(201).json({ success: true, data: client });
   }),
 

@@ -89,15 +89,9 @@ export function createRequestLogger(options: RequestLogOptions = {}): (
       `${req.method} ${req.path} - Request started`
     );
 
-    // Capture original end to log response
-    const originalEnd = res.end;
-    const responseData: { statusCode?: number; contentLength?: number } = {};
-
-    res.end = function (chunk: unknown, encoding: unknown): void {
-      responseData.statusCode = res.statusCode;
-      responseData.contentLength = res.getHeader('content-length');
-
-      // Calculate duration
+    // Use the 'finish' event instead of monkey-patching res.end
+    // This avoids conflicts with pinoHttp's own res.end interception
+    res.on('finish', () => {
       const duration = Date.now() - startTime;
       const isSlow = duration > slowThreshold;
       const isError = res.statusCode >= 400;
@@ -108,22 +102,10 @@ export function createRequestLogger(options: RequestLogOptions = {}): (
         event: 'request_complete',
         statusCode: res.statusCode,
         duration_ms: duration,
-        contentLength: responseData.contentLength,
+        contentLength: res.getHeader('content-length'),
         isSlow,
         isError,
       };
-
-      // Add response body if configured and error
-      if (logResponse && isError && res.statusCode < 500) {
-        try {
-          if (chunk && typeof chunk === 'string') {
-            const parsed = JSON.parse(chunk);
-            responseLogData.responseBody = parsed;
-          }
-        } catch {
-          // Not JSON, skip
-        }
-      }
 
       // Select log level based on status/duration
       if (res.statusCode >= 500) {
@@ -135,11 +117,7 @@ export function createRequestLogger(options: RequestLogOptions = {}): (
       } else {
         logger.info(responseLogData, `${req.method} ${req.path} - ${res.statusCode} (${duration}ms)`);
       }
-
-      // Restore original end
-      res.end = originalEnd;
-      res.end(chunk, encoding);
-    };
+    });
 
     next();
   };

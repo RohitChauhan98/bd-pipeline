@@ -7,7 +7,6 @@
  */
 
 import { prisma } from '../../config/db.js';
-import type { Prisma } from '@bd-pipeline/db';
 import { logger } from '../../config/logger.js';
 import { NotFoundError, BadRequestError, ConflictError } from '../../utils/api-error.js';
 
@@ -69,75 +68,73 @@ export const dealsService = {
     const manager = await prisma.user.findUnique({ where: { id: input.assignedManagerId } });
     if (!manager) throw new NotFoundError('Assigned manager (User)');
 
-    // 2. Atomic transaction
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // Update lead status → DEAL_CLOSED
-      await tx.lead.update({
-        where: { id: input.leadId },
-        data: { status: 'DEAL_CLOSED' },
-      });
-
-      // Update proposal → ACCEPTED (if provided)
-      if (input.proposalId) {
-        await tx.proposal.update({
-          where: { id: input.proposalId },
-          data: { status: 'ACCEPTED' },
-        });
-      }
-
-      // Create client record from lead data
-      const client = await tx.client.create({
-        data: {
-          leadId: input.leadId,
-          companyName: lead.companyName,
-          primaryContactName: lead.contactName ?? lead.companyName,
-          primaryContactEmail: lead.contactEmail ?? '',
-          primaryContactPhone: lead.contactPhone,
-          contractValue: input.contractValue,
-          contractStart: input.contractStart ? new Date(input.contractStart) : undefined,
-          contractEnd: input.contractEnd ? new Date(input.contractEnd) : undefined,
-          assignedManagerId: input.assignedManagerId,
-          status: 'ONBOARDING',
-        },
-      });
-
-      // Create onboarding pipeline
-      const pipeline = await tx.onboardingPipeline.create({
-        data: {
-          clientId: client.id,
-          currentStage: 'DEAL_CLOSED',
-          healthStatus: 'ON_TRACK',
-        },
-      });
-
-      // Create initial stage log
-      await tx.onboardingStageLog.create({
-        data: {
-          pipelineId: pipeline.id,
-          fromStage: 'DEAL_CLOSED',
-          toStage: 'DEAL_CLOSED',
-          transitionedById: userId,
-          notes: input.notes ?? 'Deal closed — onboarding pipeline created',
-        },
-      });
-
-      // Create audit log
-      await tx.auditLog.create({
-        data: {
-          userId,
-          action: 'DEAL_CLOSED',
-          resourceType: 'client',
-          resourceId: client.id,
-          metadata: {
-            leadId: input.leadId,
-            proposalId: input.proposalId,
-            contractValue: input.contractValue,
-          },
-        },
-      });
-
-      return { client, pipeline };
+    // 2. Sequential writes (avoid interactive transaction — Neon pooler may close connections)
+    // Update lead status → DEAL_CLOSED
+    await prisma.lead.update({
+      where: { id: input.leadId },
+      data: { status: 'DEAL_CLOSED' },
     });
+
+    // Update proposal → ACCEPTED (if provided)
+    if (input.proposalId) {
+      await prisma.proposal.update({
+        where: { id: input.proposalId },
+        data: { status: 'ACCEPTED' },
+      });
+    }
+
+    // Create client record from lead data
+    const client = await prisma.client.create({
+      data: {
+        leadId: input.leadId,
+        companyName: lead.companyName,
+        primaryContactName: lead.contactName ?? lead.companyName,
+        primaryContactEmail: lead.contactEmail ?? '',
+        primaryContactPhone: lead.contactPhone,
+        contractValue: input.contractValue,
+        contractStart: input.contractStart ? new Date(input.contractStart) : undefined,
+        contractEnd: input.contractEnd ? new Date(input.contractEnd) : undefined,
+        assignedManagerId: input.assignedManagerId,
+        status: 'ONBOARDING',
+      },
+    });
+
+    // Create onboarding pipeline
+    const pipeline = await prisma.onboardingPipeline.create({
+      data: {
+        clientId: client.id,
+        currentStage: 'DEAL_CLOSED',
+        healthStatus: 'ON_TRACK',
+      },
+    });
+
+    // Create initial stage log
+    await prisma.onboardingStageLog.create({
+      data: {
+        pipelineId: pipeline.id,
+        fromStage: 'DEAL_CLOSED',
+        toStage: 'DEAL_CLOSED',
+        transitionedById: userId,
+        notes: input.notes ?? 'Deal closed — onboarding pipeline created',
+      },
+    });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'DEAL_CLOSED',
+        resourceType: 'client',
+        resourceId: client.id,
+        metadata: {
+          leadId: input.leadId,
+          proposalId: input.proposalId,
+          contractValue: input.contractValue,
+        },
+      },
+    });
+
+    const result = { client, pipeline };
 
     logger.info(
       {

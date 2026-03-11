@@ -96,7 +96,7 @@ Timeline: {timeline}`,
       where: { id },
       include: {
         lead: { select: { id: true, companyName: true, contactName: true } },
-        generatedBy: { select: { id: true, name: true } },
+        reviewedBy: { select: { id: true, name: true } },
       },
     });
     if (!proposal) throw new NotFoundError('Proposal');
