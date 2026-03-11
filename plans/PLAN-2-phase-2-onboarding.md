@@ -1,13 +1,25 @@
 # Plan 2: Phase 2 - Onboarding Pipeline
 
+## Status
+**Backend:** ✅ Complete (all routes, services, controllers, agents, schemas, jobs)  
+**Frontend:** ⬜ Not started (Section 2.5)  
+**Last Updated:** Phase 2 backend implemented — all modules consolidated, 0 TypeScript errors
+
+### Implementation Notes
+- Tasks 2.1.1–2.1.3 and 2.1.5 were consolidated into a single `onboarding.routes.ts` + `onboarding.service.ts` + `onboarding.controller.ts` instead of separate route files, for cleaner code organization.
+- AI email module includes `ai-email.service.ts` (not just routes) with full generate/edit/approve/reject/send workflow.
+- Meetings module includes `meetings.service.ts` + `meetings.controller.ts` + `meetings.routes.ts` (full CRUD + notes).
+- Phase 2 agents registered in `agent-processors.ts` with lazy loading, schedules in `agent-schedule.ts`.
+- New events added to event-bus: `STAGE_CHANGED`, `MEETING_COMPLETED`.
+
 ## Overview
 Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gates, document management, and autonomous agent capabilities.
 
 ## Prerequisites
-- [ ] Phase 1 completed or stable
-- [ ] Database migrations applied (`npx prisma migrate deploy`)
+- [x] Phase 1 completed or stable
+- [x] Database migrations applied (`npx prisma migrate deploy`)
 - [ ] Ollama running (for AI features)
-- [ ] AI Agent core services running
+- [x] AI Agent core services running
 
 ## Database
 **Schema Status:** ✅ All models already defined in `schema.prisma`
@@ -26,9 +38,9 @@ Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gat
 
 ---
 
-## Section 2.1: Backend API Routes
+## Section 2.1: Backend API Routes ✅
 
-### Task 2.1.1: Onboarding Routes
+### Task 2.1.1: Onboarding Routes ✅
 **File:** `apps/api/src/modules/onboarding/onboarding.routes.ts`
 
 **Routes to implement:**
@@ -43,8 +55,8 @@ Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gat
 
 **Pattern:** Follow `apps/api/src/modules/clients/clients.routes.ts` structure
 
-### Task 2.1.2: Checklist Routes
-**File:** `apps/api/src/modules/onboarding/onboarding.checklist.routes.ts`
+### Task 2.1.2: Checklist Routes ✅
+**File:** `apps/api/src/modules/onboarding/onboarding.routes.ts` *(consolidated into main onboarding routes)*
 
 **Routes:**
 
@@ -55,8 +67,8 @@ Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gat
 | GET | `/onboarding/:clientId/checklist/gate` | Check gate status |
 | POST | `/onboarding/:clientId/checklist/bulk-complete` | Bulk complete |
 
-### Task 2.1.3: Requirements Routes
-**File:** `apps/api/src/modules/onboarding/onboarding.requirements.routes.ts`
+### Task 2.1.3: Requirements Routes ✅
+**File:** `apps/api/src/modules/onboarding/onboarding.routes.ts` *(consolidated into main onboarding routes)*
 
 **Routes:**
 
@@ -68,7 +80,7 @@ Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gat
 | DELETE | `/clients/:clientId/requirements/:id` | Delete requirement |
 | POST | `/clients/:clientId/requirements/:id/ai-suggest` | Get AI suggestions |
 
-### Task 2.1.4: Document Routes
+### Task 2.1.4: Document Routes ✅
 **File:** `apps/api/src/modules/documents/documents.routes.ts`
 
 **Routes:**
@@ -85,8 +97,8 @@ Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gat
 - `apps/api/src/services/s3.service.ts` (exists)
 - Multer for file upload
 
-### Task 2.1.5: SLA Monitoring Routes
-**File:** `apps/api/src/modules/onboarding/onboarding.sla.routes.ts`
+### Task 2.1.5: SLA Monitoring Routes ✅
+**File:** `apps/api/src/modules/onboarding/onboarding.routes.ts` *(consolidated into main onboarding routes)*
 
 **Routes:**
 
@@ -96,7 +108,7 @@ Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gat
 | GET | `/onboarding/:clientId/sla` | Client SLA status |
 | POST | `/onboarding/sla/run` | Manual SLA check trigger |
 
-### Task 2.1.6: AI Email Routes
+### Task 2.1.6: AI Email Routes ✅
 **File:** `apps/api/src/modules/ai/ai-email.routes.ts`
 
 **Routes:**
@@ -111,9 +123,9 @@ Build the 11-stage client onboarding pipeline with SLA monitoring, checklist gat
 
 ---
 
-## Section 2.2: Zod Schemas
+## Section 2.2: Zod Schemas ✅
 
-### Task 2.2.1: Onboarding Schemas
+### Task 2.2.1: Onboarding Schemas ✅
 **File:** `packages/shared/src/schemas/onboarding.schema.ts`
 
 **Create schemas:**
@@ -156,7 +168,7 @@ export const docIdParam = z.object({ docId: z.string().uuid() });
 
 **Pattern:** See `packages/shared/src/schemas/client.schema.ts`
 
-### Task 2.2.2: Meeting Schemas
+### Task 2.2.2: Meeting Schemas ✅
 **File:** `packages/shared/src/schemas/meeting.schema.ts`
 
 ```typescript
@@ -187,9 +199,9 @@ export const meetingNoteSchema = z.object({
 
 ---
 
-## Section 2.3: AI Agents - Phase 2
+## Section 2.3: AI Agents - Phase 2 ✅
 
-### Task 2.3.1: Onboarding Agent
+### Task 2.3.1: Onboarding Agent ✅
 **File:** `apps/api/src/agents/onboarding.agent.ts`
 
 **Responsibilities:**
@@ -204,7 +216,7 @@ export const meetingNoteSchema = z.object({
 - Task 2.1.2 - Checklist Routes
 - Event Bus Service (from Plan 1)
 
-### Task 2.3.2: SLA Agent
+### Task 2.3.2: SLA Agent ✅
 **File:** `apps/api/src/agents/sla.agent.ts`
 
 **Responsibilities:**
@@ -215,7 +227,7 @@ export const meetingNoteSchema = z.object({
 
 **Enhance existing:** `apps/api/src/jobs/processors.ts` - `processSlaCheck`
 
-### Task 2.3.3: Document Agent
+### Task 2.3.3: Document Agent ✅
 **File:** `apps/api/src/agents/document.agent.ts`
 
 **Responsibilities:**
@@ -225,7 +237,7 @@ export const meetingNoteSchema = z.object({
 - Alert on approaching expiry dates
 - Flag documents with issues
 
-### Task 2.3.4: Meeting Agent
+### Task 2.3.4: Meeting Agent ✅
 **File:** `apps/api/src/agents/meeting.agent.ts`
 
 **Responsibilities:**
@@ -236,10 +248,10 @@ export const meetingNoteSchema = z.object({
 
 ---
 
-## Section 2.4: BullMQ Jobs
+## Section 2.4: BullMQ Jobs ✅
 
-### Task 2.4.1: Update Job Processors
-**File:** `apps/api/src/jobs/processors.ts`
+### Task 2.4.1: Update Job Processors ✅
+**File:** `apps/api/src/jobs/agent-processors.ts`
 
 **Add/Update processors:**
 
@@ -263,7 +275,7 @@ export async function processMeetingReminder(job: Job) {
 
 ---
 
-## Section 2.5: Frontend
+## Section 2.5: Frontend ⬜
 
 ### Task 2.5.1: Onboarding Dashboard
 **File:** `apps/web/src/app/dashboard/onboarding/page.tsx`

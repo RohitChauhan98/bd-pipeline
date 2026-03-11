@@ -87,6 +87,13 @@ const envSchema = z.object({
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(100),
+
+  // Logging
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
+  LOG_SLOW_THRESHOLD_MS: z.coerce.number().default(3000),
+  LOG_DB_SLOW_THRESHOLD_MS: z.coerce.number().default(500),
+  LOG_REQUEST_BODY: z.boolean().default(false),
+  LOG_RESPONSE_BODY: z.boolean().default(false),
 });
 
 export type Env = z.infer<typeof envSchema>;

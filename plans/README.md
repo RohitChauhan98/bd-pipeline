@@ -17,9 +17,9 @@ This directory contains detailed execution plans for building the Business Devel
 | Phase | Name | Purpose | Status |
 |-------|------|---------|--------|
 | **1** | Business Development | Lead discovery → scoring → outreach → deal close | ✅ Complete (agent infra built) |
-| **2** | Onboarding Pipeline | Deal closed → 11-stage onboarding with AI + SLA monitoring | Not Started |
-| **3** | Customer Success | NPS → churn risk → upsell → re-entry into BD | Not Started |
-| **Agent Core** | AI Agent System | Autonomous agent infrastructure | ✅ Phase 1 agents done; Phase 2/3 agents pending |
+| **2** | Onboarding Pipeline | Deal closed → 11-stage onboarding with AI + SLA monitoring | ✅ Backend complete; Frontend pending |
+| **3** | Customer Success | NPS → churn risk → upsell → re-entry into BD | ✅ Backend complete; Frontend pending |
+| **Agent Core** | AI Agent System | Autonomous agent infrastructure | ✅ Phase 1+2+3 agents done |
 
 ## Plans Directory
 
@@ -42,16 +42,21 @@ plans/
    - ~~Agent Log Service~~ ✅
    - ~~Lead Discovery Agent~~ ✅
 
-2. **Then PLAN-2**: Build onboarding pipeline — NEXT UP
-   - Onboarding Routes
-   - Checklist & Requirements
-   - Document Management
-   - SLA Monitoring
+2. **Then PLAN-2**: ✅ Backend COMPLETE — Onboarding pipeline backend fully built
+   - ~~Onboarding Routes~~ ✅ (consolidated into single routes file)
+   - ~~Checklist & Requirements~~ ✅
+   - ~~Document Management~~ ✅
+   - ~~SLA Monitoring~~ ✅
+   - ~~AI Email Module~~ ✅
+   - ~~4 Phase 2 Agents~~ ✅ (onboarding, sla, document, meeting)
+   - Frontend (Section 2.5) — NEXT UP
 
-3. **Then PLAN-3**: Build customer success
-   - NPS Routes
-   - Health Score Algorithm
-   - Churn & Upsell Detection
+3. **Then PLAN-3**: ✅ Backend COMPLETE — Customer success backend fully built
+   - ~~NPS Routes~~ ✅ (collect, dashboard, survey, history)
+   - ~~Health Score Algorithm~~ ✅ (weighted multi-factor churn + upsell)
+   - ~~Churn & Upsell Detection~~ ✅
+   - ~~3 Phase 3 Agents~~ ✅ (nps, health, upsell)
+   - Frontend (Section 3.6) — pending
 
 4. **Finally PLAN-4**: Complete agent system
    - Agent Memory & Planner

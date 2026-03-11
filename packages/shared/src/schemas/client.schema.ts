@@ -1,5 +1,8 @@
 /**
- * Client & Onboarding Schemas
+ * Client Schemas
+ *
+ * Client management schemas. Onboarding-specific schemas (stages, checklists,
+ * requirements) are in onboarding.schema.ts.
  */
 
 import { z } from 'zod';
@@ -47,40 +50,6 @@ export const dealCloseSchema = z.object({
   (data) => Boolean(data.accountManagerId ?? data.assignedManagerId),
   { message: 'Either accountManagerId or assignedManagerId is required', path: ['accountManagerId'] },
 );
-
-// ── Onboarding Stage ─────────────────────────
-
-export const advanceStageSchema = z.object({
-  notes: z.string().optional(),
-});
-
-export const setStageSchema = z.object({
-  stage: z.enum([
-    'DEAL_CLOSED',
-    'KICKOFF',
-    'REQUIREMENTS_GATHERING',
-    'DOCUMENTATION',
-    'TECHNICAL_SETUP',
-    'TESTING_UAT',
-    'GO_LIVE',
-    'TRAINING',
-    'COMPLETED',
-  ]),
-  notes: z.string().optional(),
-});
-
-// ── Checklist ────────────────────────────────
-
-export const updateChecklistItemSchema = z.object({
-  isCompleted: z.boolean(),
-});
-
-// ── Requirements ─────────────────────────────
-
-export const createRequirementSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  body: z.string().min(1, 'Description is required'),
-});
 
 // ── Client List Query ────────────────────────
 

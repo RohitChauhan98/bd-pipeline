@@ -35,12 +35,14 @@ export const EVENTS = {
   DEAL_LOST: 'deal:lost',
 
   // Onboarding events (Phase 2)
+  STAGE_CHANGED: 'onboarding:stage-changed',
   STAGE_ADVANCED: 'onboarding:stage-advanced',
   CHECKLIST_COMPLETED: 'onboarding:checklist-completed',
   DOCUMENT_UPLOADED: 'onboarding:document-uploaded',
   DOCUMENT_SCANNED: 'onboarding:document-scanned',
   SLA_BREACH: 'onboarding:sla-breach',
   ONBOARDING_COMPLETED: 'onboarding:completed',
+  MEETING_COMPLETED: 'meeting:completed',
 
   // Success events (Phase 3)
   NPS_SUBMITTED: 'success:nps-submitted',

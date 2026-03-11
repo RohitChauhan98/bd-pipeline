@@ -12,22 +12,13 @@ import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { UnauthorizedError } from '../utils/api-error.js';
+import { logger } from '../config/logger.js';
 
 /** JWT payload shape attached to req.user */
 export interface JwtPayload {
   userId: string;
   email: string;
   role: string;
-}
-
-// Extend Express Request to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-      requestId?: string;
-    }
-  }
 }
 
 /**
@@ -46,8 +37,28 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
     req.user = decoded;
+    
+    // Set user context for logging
+    req.userId = decoded.userId;
+    req.userEmail = decoded.email;
+    req.userRole = decoded.role;
+    
+    // Update log metadata with user info
+    if (req.logMetadata) {
+      req.logMetadata.userId = decoded.userId;
+    }
+    
     next();
   } catch (err) {
+    // Log failed authentication attempts
+    logger.warn({
+      requestId: req.requestId,
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+      reason: err instanceof jwt.TokenExpiredError ? 'token_expired' : 'invalid_token',
+    }, 'Authentication failed');
+    
     if (err instanceof jwt.TokenExpiredError) {
       throw new UnauthorizedError('Token has expired');
     }

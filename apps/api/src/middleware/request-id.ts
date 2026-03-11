@@ -16,7 +16,22 @@ import { randomUUID } from 'crypto';
 
 export function requestId(req: Request, res: Response, next: NextFunction): void {
   const id = (req.headers['x-request-id'] as string) || `req_${randomUUID()}`;
+  
+  // Set on request
   req.requestId = id;
+  
+  // Set on response
   res.setHeader('X-Request-ID', id);
+  
+  // Set request start time for performance tracking
+  req.requestStartTime = Date.now();
+  
+  // Set default log metadata
+  req.logMetadata = {
+    requestId: id,
+    endpoint: req.path,
+    method: req.method,
+  };
+  
   next();
 }

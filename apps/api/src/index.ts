@@ -18,6 +18,7 @@ import { setupSwagger } from './config/swagger.js';
 
 // Middleware
 import { requestId } from './middleware/request-id.js';
+import { requestLogger } from './middleware/request-logger.js';
 import { generalLimiter } from './middleware/rate-limit.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { notFoundHandler } from './middleware/not-found.js';
@@ -31,8 +32,14 @@ import { clientsRoutes } from './modules/clients/clients.routes.js';
 import { callsRoutes } from './modules/calls/calls.routes.js';
 import { proposalsRoutes } from './modules/proposals/proposals.routes.js';
 import { aiRoutes } from './modules/ai/ai.routes.js';
+import { aiEmailRoutes } from './modules/ai/ai-email.routes.js';
 import { dealsRoutes } from './modules/deals/deals.routes.js';
 import agentRoutes from './modules/agent/agent.routes.js';
+import { onboardingRoutes } from './modules/onboarding/onboarding.routes.js';
+import { documentsRoutes } from './modules/documents/documents.routes.js';
+import { meetingsRoutes } from './modules/meetings/meetings.routes.js';
+import { npsRoutes } from './modules/nps/nps.routes.js';
+import { successRoutes } from './modules/success/success.routes.js';
 
 // Shutdown
 import { registerShutdownHandlers } from './utils/graceful-shutdown.js';
@@ -44,8 +51,27 @@ const app = express();
 // ── Global Middleware ────────────────────────
 
 app.set('trust proxy', 1);
+
+// Request ID must be first to ensure all logs have requestId
 app.use(requestId);
-app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => (req.url ?? '').includes('/health') } }));
+
+// pino-http for HTTP request logging (use our custom logger for more control)
+app.use(pinoHttp({
+  logger,
+  autoLogging: {
+    ignore: (req) => req.url?.includes('/health') || req.url?.includes('/api/docs'),
+  },
+  customSuccessMessage: (req, res) => {
+    return `${req.method} ${req.url} - ${res.statusCode}`;
+  },
+  customErrorMessage: (req, res, err) => {
+    return `${req.method} ${req.url} - ${res.statusCode} - ${err.message}`;
+  },
+}));
+
+// Additional structured request logging
+app.use(requestLogger);
+
 app.use(cors({
   origin: env.CORS_ORIGIN ?? 'http://localhost:3000',
   credentials: true,
@@ -71,7 +97,13 @@ app.use(API_PREFIX, clientsRoutes);
 app.use(API_PREFIX, callsRoutes);
 app.use(API_PREFIX, proposalsRoutes);
 app.use(API_PREFIX, aiRoutes);
+app.use(API_PREFIX, aiEmailRoutes);
 app.use(API_PREFIX, dealsRoutes);
+app.use(API_PREFIX, onboardingRoutes);
+app.use(API_PREFIX, documentsRoutes);
+app.use(API_PREFIX, meetingsRoutes);
+app.use(API_PREFIX, npsRoutes);
+app.use(API_PREFIX, successRoutes);
 app.use(`${API_PREFIX}/agent`, agentRoutes);
 
 // ── Error Handling ───────────────────────────

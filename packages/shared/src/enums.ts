@@ -101,6 +101,44 @@ export const NotificationType = {
   EMAIL_APPROVAL: 'EMAIL_APPROVAL',
 } as const;
 
+export const DocumentCategory = {
+  CONTRACT: 'CONTRACT',
+  KYC: 'KYC',
+  TECHNICAL_SPEC: 'TECHNICAL_SPEC',
+  NDA: 'NDA',
+  OTHER: 'OTHER',
+} as const;
+
+export const ScanStatus = {
+  NOT_SCANNED: 'NOT_SCANNED',
+  SCANNING: 'SCANNING',
+  OK: 'OK',
+  ISSUES_FOUND: 'ISSUES_FOUND',
+} as const;
+
+export const MeetingStatus = {
+  UPCOMING: 'UPCOMING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  RESCHEDULED: 'RESCHEDULED',
+} as const;
+
+export const AiEmailType = {
+  FOLLOWUP: 'FOLLOWUP',
+  ONBOARDING_UPDATE: 'ONBOARDING_UPDATE',
+  PROPOSAL: 'PROPOSAL',
+  PITCH: 'PITCH',
+  CUSTOM: 'CUSTOM',
+} as const;
+
+export const AiEmailStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  SENT: 'SENT',
+  REJECTED: 'REJECTED',
+} as const;
+
 /** Ordered list of onboarding stages for pipeline progression */
 export const ONBOARDING_STAGE_ORDER: readonly string[] = [
   OnboardingStage.DEAL_CLOSED,

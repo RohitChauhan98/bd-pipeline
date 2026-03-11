@@ -20,8 +20,10 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/api-error.js';
-import { logger } from '../config/logger.js';
+import { logger, createModuleLogger } from '../config/logger.js';
 import { env } from '../config/env.js';
+
+const errorModuleLogger = createModuleLogger('error');
 
 export function errorHandler(
   err: Error,
@@ -33,12 +35,15 @@ export function errorHandler(
   if (err instanceof ApiError) {
     logger.warn(
       {
-        err: { code: err.code, message: err.message, status: err.status },
         requestId: req.requestId,
+        userId: req.userId,
         path: req.path,
         method: req.method,
+        statusCode: err.status,
+        errorCode: err.code,
+        errorMessage: err.message,
       },
-      'API error',
+      `API Error: ${err.code} - ${err.message}`
     );
 
     res.status(err.status).json({
@@ -55,14 +60,19 @@ export function errorHandler(
   }
 
   // Unknown error — log full stack, return generic 500
-  logger.error(
+  const errorId = `err_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  
+  errorModuleLogger.errorWithStack(
+    `Unhandled error: ${err.message}`,
+    err,
     {
-      err,
       requestId: req.requestId,
+      userId: req.userId,
       path: req.path,
       method: req.method,
-    },
-    'Unhandled error',
+      errorId,
+      statusCode: 500,
+    }
   );
 
   // Report to Sentry in production
@@ -79,7 +89,10 @@ export function errorHandler(
         ? 'An unexpected error occurred'
         : err.message,
       status: 500,
-      ...(env.NODE_ENV === 'development' && { stack: err.stack }),
+      ...(env.NODE_ENV === 'development' ? { 
+        stack: err.stack,
+        errorId,
+      } : {}),
     },
     requestId: req.requestId,
   });

@@ -1,12 +1,25 @@
 # Plan 3: Phase 3 - Customer Success
 
+## Status
+**Backend:** ✅ Complete (all routes, services, controllers, agents, health-score service)
+**Frontend:** ⬜ Not started (Section 3.6)
+**Last Updated:** Phase 3 backend implemented — NPS, Success, Health Score modules + 3 agents, 0 TypeScript errors
+
+### Implementation Notes
+- NPS module has full collect + dashboard + survey sending + trend analytics.
+- Success module includes dashboard, client health detail, upsell flagging, health refresh, and BD re-entry workflow.
+- Health Score Service implements weighted multi-factor algorithm for both churn risk and upsell scoring.
+- 3 Phase 3 agents registered in agent-processors.ts (nps, health, upsell). Schedules already existed in agent-schedule.ts.
+- Events already existed in event-bus: NPS_SUBMITTED, NPS_DETRACTOR, CHURN_DETECTED, UPSELL_DETECTED, ONBOARDING_COMPLETED.
+- Basic NPS collect/upsell-flag already existed in ai.service.ts; Phase 3 modules provide more comprehensive dedicated implementations.
+
 ## Overview
 Post-onboarding features: NPS collection, churn risk scoring, upsell detection, and autonomous health monitoring.
 
 ## Prerequisites
-- [ ] Phase 2 completed
+- [x] Phase 2 completed
 - [ ] Clients in `ACTIVE` status exist
-- [ ] AI Agent core services running
+- [x] AI Agent core services running
 
 ## Database
 **Schema Status:** ✅ All models already defined
@@ -18,9 +31,9 @@ Post-onboarding features: NPS collection, churn risk scoring, upsell detection, 
 
 ---
 
-## Section 3.1: Backend Routes
+## Section 3.1: Backend Routes ✅
 
-### Task 3.1.1: NPS Routes
+### Task 3.1.1: NPS Routes ✅
 **File:** `apps/api/src/modules/nps/nps.routes.ts`
 
 **Routes:**
@@ -34,7 +47,7 @@ Post-onboarding features: NPS collection, churn risk scoring, upsell detection, 
 
 **Pattern:** Follow `apps/api/src/modules/clients/clients.routes.ts`
 
-### Task 3.1.2: Success Routes
+### Task 3.1.2: Success Routes ✅
 **File:** `apps/api/src/modules/success/success.routes.ts`
 
 **Routes:**
@@ -46,8 +59,8 @@ Post-onboarding features: NPS collection, churn risk scoring, upsell detection, 
 | POST | `/success/:clientId/upsell` | Flag upsell opportunity |
 | POST | `/success/:clientId/health/refresh` | Recalculate health scores |
 
-### Task 3.1.3: BD Re-entry Routes
-**File:** `apps/api/src/modules/success/success.bd-handoff.routes.ts`
+### Task 3.1.3: BD Re-entry Routes ✅
+**File:** `apps/api/src/modules/success/success.routes.ts` *(consolidated into main success routes)*
 
 **Routes:**
 
@@ -59,9 +72,9 @@ Post-onboarding features: NPS collection, churn risk scoring, upsell detection, 
 
 ---
 
-## Section 3.2: Zod Schemas
+## Section 3.2: Zod Schemas ✅
 
-### Task 3.2.1: NPS Schemas
+### Task 3.2.1: NPS Schemas ✅
 **File:** `packages/shared/src/schemas/nps.schema.ts`
 
 ```typescript
@@ -87,7 +100,7 @@ export const npsQuerySchema = z.object({
 });
 ```
 
-### Task 3.2.2: Success Schemas
+### Task 3.2.2: Success Schemas ✅
 **File:** `packages/shared/src/schemas/success.schema.ts`
 
 ```typescript
@@ -121,9 +134,9 @@ export const successQuerySchema = z.object({
 
 ---
 
-## Section 3.3: Health Score Algorithm
+## Section 3.3: Health Score Algorithm ✅
 
-### Task 3.3.1: Health Score Service
+### Task 3.3.1: Health Score Service ✅
 **File:** `apps/api/src/services/health-score.service.ts`
 
 **Churn Risk Score Calculation:**
@@ -175,9 +188,9 @@ interface HealthScores {
 
 ---
 
-## Section 3.4: AI Agents - Phase 3
+## Section 3.4: AI Agents - Phase 3 ✅
 
-### Task 3.4.1: NPS Agent
+### Task 3.4.1: NPS Agent ✅
 **File:** `apps/api/src/agents/nps.agent.ts`
 
 **Responsibilities:**
@@ -191,7 +204,7 @@ interface HealthScores {
 - Onboarding COMPLETED → schedule first NPS (after 7 days)
 - Weekly cron for pending surveys
 
-### Task 3.4.2: Health Agent
+### Task 3.4.2: Health Agent ✅
 **File:** `apps/api/src/agents/health.agent.ts`
 
 **Responsibilities:**
@@ -203,7 +216,7 @@ interface HealthScores {
 
 **Schedule:** Daily via BullMQ
 
-### Task 3.4.3: Upsell Agent
+### Task 3.4.3: Upsell Agent ✅
 **File:** `apps/api/src/agents/upsell.agent.ts`
 
 **Responsibilities:**
@@ -217,10 +230,10 @@ interface HealthScores {
 
 ---
 
-## Section 3.5: BullMQ Jobs
+## Section 3.5: BullMQ Jobs ✅
 
-### Task 3.5.1: Add Health Processors
-**File:** `apps/api/src/jobs/processors.ts`
+### Task 3.5.1: Add Health Processors ✅
+**File:** `apps/api/src/jobs/agent-processors.ts`
 
 ```typescript
 // Process NPS Survey Send
@@ -244,7 +257,7 @@ export async function processUpsellDetection(job: Job) {
 
 ---
 
-## Section 3.6: Frontend
+## Section 3.6: Frontend ⬜
 
 ### Task 3.6.1: Success Dashboard
 **File:** `apps/web/src/app/dashboard/success/page.tsx`

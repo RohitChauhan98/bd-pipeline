@@ -11,10 +11,20 @@ import { logger } from '../config/logger.js';
 // ── Lazy Agent Loaders ───────────────────────
 
 const agents = {
+  // Phase 1
   'lead-discovery': async () => (await import('../agents/lead-discovery.agent.js')).leadDiscoveryAgent,
   'lead-scoring': async () => (await import('../agents/lead-scoring.agent.js')).leadScoringAgent,
   'followup': async () => (await import('../agents/followup.agent.js')).followupAgent,
   'notify': async () => (await import('../agents/notification.agent.js')).notificationAgent,
+  // Phase 2
+  'onboarding': async () => (await import('../agents/onboarding.agent.js')).onboardingAgent,
+  'sla': async () => (await import('../agents/sla.agent.js')).slaAgent,
+  'document': async () => (await import('../agents/document.agent.js')).documentAgent,
+  'meeting': async () => (await import('../agents/meeting.agent.js')).meetingAgent,
+  // Phase 3
+  'nps': async () => (await import('../agents/nps.agent.js')).npsAgent,
+  'health': async () => (await import('../agents/health.agent.js')).healthAgent,
+  'upsell': async () => (await import('../agents/upsell.agent.js')).upsellAgent,
 } as const;
 
 type AgentName = keyof typeof agents;
