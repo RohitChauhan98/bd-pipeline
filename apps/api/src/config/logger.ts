@@ -4,14 +4,21 @@
  * Production-grade structured JSON logging with:
  * - Request tracing (requestId, userId)
  * - Performance metrics
- * - Log rotation
+ * - Log rotation (daily via pino-roll)
  * - Audit logging
+ * - Persisted log files in logs/ directory
  *
- * In development: pretty-printed output via pino-pretty
- * In production: raw JSON to stdout (consumed by log aggregators)
+ * In development: pretty-printed to console + JSON to log files
+ * In production: raw JSON to stdout + JSON to log files
+ *
+ * Log files:
+ *   logs/app.log       — all logs (rotated daily, 14-day retention)
+ *   logs/error.log     — error + fatal only (rotated daily, 30-day retention)
  */
 
 import pino from 'pino';
+import { existsSync, mkdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { env } from './env.js';
 
 /** Log levels supported by the application */
@@ -32,6 +39,66 @@ function createChildLogger(parent: pino.Logger, bindings: LogMetadata): pino.Log
   return parent.child(bindings);
 }
 
+// Ensure logs directory exists
+const logsDir = resolve(process.cwd(), 'logs');
+if (!existsSync(logsDir)) {
+  mkdirSync(logsDir, { recursive: true });
+}
+
+/** Build multi-transport targets: console + log files */
+function buildTransport(): pino.TransportMultiOptions {
+  const targets: pino.TransportTargetOptions[] = [];
+
+  // 1) Console output
+  if (env.NODE_ENV === 'development') {
+    targets.push({
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
+        ignore: 'pid,hostname',
+        messageFormat: '{msg}',
+      },
+      level: 'debug',
+    });
+  } else {
+    // Production: raw JSON to stdout
+    targets.push({
+      target: 'pino/file',
+      options: { destination: 1 }, // fd 1 = stdout
+      level: 'info',
+    });
+  }
+
+  // 2) All logs → logs/app.log (rotated daily, 14-day retention)
+  targets.push({
+    target: 'pino-roll',
+    options: {
+      file: resolve(logsDir, 'app'),
+      frequency: 'daily',
+      dateFormat: 'yyyy-MM-dd',
+      limit: { count: 14 },
+      mkdir: true,
+    },
+    level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+  });
+
+  // 3) Error logs → logs/error.log (rotated daily, 30-day retention)
+  targets.push({
+    target: 'pino-roll',
+    options: {
+      file: resolve(logsDir, 'error'),
+      frequency: 'daily',
+      dateFormat: 'yyyy-MM-dd',
+      limit: { count: 30 },
+      mkdir: true,
+    },
+    level: 'error',
+  });
+
+  return { targets };
+}
+
 /** Application-wide logger instance */
 export const logger = pino({
   level: env.LOG_LEVEL || (env.NODE_ENV === 'production' ? 'info' : 'debug'),
@@ -49,26 +116,11 @@ export const logger = pino({
     }),
   },
 
-  // Custom formatters
-  formatters: {
-    level: (label: string) => ({ level: label.toUpperCase() }),
-  },
-
   // Add timestamp in ISO format (leading comma required by pino's JSON concatenation)
   timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
 
-  // Pretty print in development
-  transport: env.NODE_ENV === 'development'
-    ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
-          ignore: 'pid,hostname',
-          messageFormat: '{msg}',
-        },
-      }
-    : undefined,
+  // Multi-transport: console + file persistence
+  transport: buildTransport(),
 
   // Redact sensitive fields from logs
   redact: {

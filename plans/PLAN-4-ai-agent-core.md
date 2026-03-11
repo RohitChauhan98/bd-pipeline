@@ -17,9 +17,13 @@
 | Agent Processors + Scheduler | ✅ Done | BullMQ integration |
 | Agent API Routes | ✅ Done | Admin-only status/activity/config/trigger/events |
 | Worker Registration | ✅ Done | agent-task + agent-schedule workers |
-| Onboarding Agent | 🔲 Phase 2 | SLA monitoring, stage advancement |
-| Success Agent | 🔲 Phase 3 | NPS, churn, upsell, re-entry |
-| Monitor Agent | 🔲 Phase 2/3 | Health checks, SLA monitoring |
+| Onboarding Agent | ✅ Done | Phase 2 — stage advancement, checklist monitoring |
+| SLA Agent | ✅ Done | Phase 2 — SLA checks every 4 hours |
+| Document Agent | ✅ Done | Phase 2 — auto-scan, completeness validation |
+| Meeting Agent | ✅ Done | Phase 2 — scheduling, reminders |
+| NPS Agent | ✅ Done | Phase 3 — survey scheduling, detractor alerts |
+| Health Agent | ✅ Done | Phase 3 — daily churn risk calculation |
+| Upsell Agent | ✅ Done | Phase 3 — daily upsell detection |
 | Frontend Agent Pages | 🔲 Not Started | Activity, config, status dashboard |
 | DB Migration | ⚠️ Pending | Neon DB cold start; run `prisma migrate dev` when accessible |
 

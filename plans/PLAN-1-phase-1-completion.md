@@ -1,7 +1,22 @@
 # Plan 1: Phase 1 - Completion & Foundation
 
+## Status
+**Backend:** ✅ Complete (all routes, services, controllers, agents, schemas)
+**E2E Testing:** ✅ 60/60 assertions passing (test-flow.mjs)
+**Logging:** ✅ Pino multi-transport with file persistence (pino-roll)
+**Frontend:** ⬜ Not started
+**Last Updated:** March 11, 2026 — E2E tests passing, logging system fully operational with file rotation
+
+### Recent Fixes (March 2026)
+- Fixed 12 bugs discovered during E2E testing (enum values, field mappings, route conflicts, Neon transaction hangs)
+- Fixed logger.ts: `serialize` → `serializers`, timestamp comma, duplicate level, pino-pretty simplification
+- Fixed request-logger.ts: replaced `res.end` monkey-patching with `res.on('finish')` event listener
+- Fixed rate-limit.ts: auth rate limit 5 → 30 req/min
+- Added log file persistence: pino-roll with daily rotation, 14-day app retention, 30-day error retention
+- Log files: `logs/app.YYYY-MM-DD.N.log` (all logs) + `logs/error.YYYY-MM-DD.N.log` (error/fatal only)
+
 ## Overview
-Phase 1 core features are implemented. Agent infrastructure is now built. Remaining work: tests and Prisma migration for agent tables.
+Phase 1 core features are implemented. Agent infrastructure is now built. E2E testing complete with 60/60 assertions passing. Remaining work: unit tests and Prisma migration for agent tables.
 
 ## Current Status
 
@@ -30,6 +45,8 @@ Phase 1 core features are implemented. Agent infrastructure is now built. Remain
 | Notification Agent | ✅ Complete | Event-driven: Telegram (urgent) + in-app (info) |
 | Agent API Routes | ✅ Complete | GET/PATCH config, status, activity, trigger, events |
 | Agent Workers | ✅ Complete | Registered in worker.ts with scheduler |
+| E2E Flow Test | ✅ Complete | 60/60 assertions passing (`test-flow.mjs`) |
+| Logging System | ✅ Complete | Pino multi-transport + pino-roll file rotation |
 | Module Tests | 🔲 Not Started | Only auth, health, leads have tests |
 | DB Migration (agent tables) | ⚠️ Pending | Prisma client generated; migration blocked by Neon DB cold start |
 
@@ -168,6 +185,19 @@ packages/db/prisma/schema.prisma    — Added AgentLog + AgentConfig models
 
 ## Remaining Work
 
-1. **Tests** — Create tests for outreach, calls, proposals, clients, deals modules
+1. **Unit Tests** — Create unit tests for outreach, calls, proposals, clients, deals modules
 2. **DB Migration** — Run `prisma migrate dev` when Neon DB is accessible to create agent_logs/agent_configs tables
 3. **Swagger Verification** — Confirm all endpoints show in /api/docs
+4. **Frontend** — Phase 1 frontend pages (leads dashboard, outreach, proposals)
+
+## Completed Additional Work
+
+### E2E Flow Test (`test-flow.mjs`)
+60 assertions covering: health check → auth (3 users) → leads CRUD → outreach/pitches → proposals → clients → onboarding pipeline → meetings → documents → NPS → success/health scores → upsell flagging
+
+### Logging System (`apps/api/src/config/logger.ts`)
+- Multi-transport: pino-pretty (dev console) + pino-roll (file rotation)
+- `logs/app.YYYY-MM-DD.N.log` — all logs, daily rotation, 14-day retention
+- `logs/error.YYYY-MM-DD.N.log` — error+fatal only, daily rotation, 30-day retention
+- Auto-creates `logs/` directory on startup
+- Added `pino-roll` dependency to `@bd-pipeline/api`
